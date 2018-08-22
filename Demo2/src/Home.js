@@ -8,9 +8,18 @@ import {
     Image,
     ScrollView,
     Modal,
+    Button,
+    Animated,
+    Easing,
+
 } from 'react-native';
 
  import Video from 'react-native-video';
+
+ import Dimensions from "Dimensions";
+
+ var {width,height} = Dimensions.get('window')
+
 
 export default class Home extends Component {
 
@@ -21,7 +30,8 @@ export default class Home extends Component {
             city:'上海',
             rate:1,
             videosUrl:['new.mp4','http://124.129.157.208:8810/SD/2017qingdao/xiaoxueEnglish/grade3/b/1.mp4','new2.mp4'],
-            currentPlayurl:'new.mp4'
+            currentPlayurl:'new.mp4',
+            modelIsShow:false,
         };
 
     }
@@ -92,31 +102,49 @@ export default class Home extends Component {
                 >
               <VideoItem  url={this.state.videosUrl[0]}
                           key='1'
+                          CurrentUrl={this.CurrentUrl.bind(this)}
                           // vedioClick = {this.vedioClick.bind(this)}
               />
                 <VideoItem  url={this.state.videosUrl[1]}
                             key='2'
-                            // vedioClick = {this.vedioClick.bind(this)}
+                            CurrentUrl={this.CurrentUrl.bind(this)}
+
+                    // vedioClick = {this.vedioClick.bind(this)}
 
                 />
                 <VideoItem  url={this.state.videosUrl[2]}
                             key='3'
-                            // vedioClick = {this.vedioClick.bind(this)}
+                            CurrentUrl={this.CurrentUrl.bind(this)}
+
+                    // vedioClick = {this.vedioClick.bind(this)}
 
                 />
                 </ScrollView>
 
+              <PlayVideoModle
+                  url={this.state.currentPlayurl}
+                  modelShow={this.state.modelIsShow}
+                  showPlayView={this.showPlayView.bind(this)}
+              >
 
-              {/*<VideoModal style={{backgroundColor:'yellow',width:350,height:500}}*/}
-                  {/*url={this.state.currentPlayurl}*/}
-                  {/*modalVisible={false}*/}
-              {/*/>*/}
-
-
-
-
+              </PlayVideoModle>
             </View>
+
         );
+
+    }
+
+    showPlayView(isShow){
+        this.setState({
+            modelIsShow:isShow
+        })
+    }
+    CurrentUrl(url){
+
+        this.setState({
+            currentPlayurl:url,
+            modelIsShow:true
+        })
 
     }
 
@@ -124,7 +152,7 @@ export default class Home extends Component {
        var  url =this.state.videosUrl[index];
         this.setState({
             currentPlayurl:url,
-            modalVisible:true,
+            // modalVisible:true,
         })
 
     };
@@ -165,6 +193,91 @@ export default class Home extends Component {
     };
 }
 
+class PlayVideoModle extends Component{
+     constructor(props){
+         super(props)
+         this.state={
+             // videoUlr:this.props.url,
+             videoViewW:320,
+             videoViewH:100,
+
+             paused:false,
+
+         }
+     }
+
+     render(){
+         var modelW ;
+         var modelH ;
+         return(
+
+             <Animated.View >
+                 <Modal
+                     animationType='none'
+                     visible={this.props.modelShow}
+                     transparent={true}
+                     onShow={this.modalShow.bind(this)}
+                     onRequestClose={()=>{
+                     }}
+                 ><View
+                     style={styles.modalStyles}
+                 >
+                     <TouchableOpacity onPress={()=>{
+                         this.props.showPlayView(false);
+
+                     }} style={styles.fullScreenVideo}
+
+                     >
+                     <Video
+                         ref={(ref) => this.videoPlayer = ref}
+                         source={{uri:this.props.url}}
+                         style={styles.fullScreenVideo}
+                         rate={1}                          // 控制暂停/播放，0 代表暂停paused, 1代表播放normal.
+                         paused={false}
+                         volume={1}                   // 声音的放大倍数，0 代表没有声音，就是静音muted, 1 代表正常音量 normal，更大的数字表示放大的倍数
+                         muted={false}                  // true代表静音，默认为false.
+                         resizeMode='cover'       // 视频的自适应伸缩铺放行为，
+                         onLoad={this.onLoad}                       // 当视频加载完毕时的回调函数
+                         onLoadStart={this.loadStart}            // 当视频开始加载时的回调函数
+                         onProgress={this.onProgress}   //  进度控制，每250ms调用一次，以获取视频播放的进度
+                         onEnd={this.onEnd}             // 当视频播放完毕后的回调函数
+                         onError={this.videoError}    // 当视频不能加载，或出错后的回调函数
+                         onAudioBecomingNoisy={this.onAudioBecomingNoisy}
+                         onAudioFocusChanged={this.onAudioFocusChanged}
+                         repeat={true}
+
+                     />
+                     </TouchableOpacity>
+                 </View>
+
+                 </Modal>
+             </Animated.View>
+
+         )
+     }
+    modalShow(){
+
+        //  this.setState({
+        //     modeW:modelW,
+        //     modeH:modelW,
+        // })
+        // Animated.timing(this.state.videoViewW, {
+        //     toValue: this.state.modeW,
+        //     duration: 1000,
+        //     easing: Easing.linear,// 线性的渐变函数
+        // }).start();
+        // Animated.timing(this.state.videoViewH, {
+        //     toValue: this.state.modeH,
+        //     duration: 1000,
+        //     easing: Easing.linear,// 线性的渐变函数
+        // }).start();
+    }
+
+
+
+}
+
+
 class VideoItem extends  Component{
 
     constructor(props){
@@ -172,6 +285,8 @@ class VideoItem extends  Component{
         this.state={
             paused:false,
             modalVisible:false,
+            rate:0,
+
         }
     }
 
@@ -179,10 +294,13 @@ class VideoItem extends  Component{
 
         var paused = this.state.paused;
         var modalVisible = this.state.modalVisible;
-        this.setState({
-            paused:!paused,
-        })
-        // this.props.vedioClick(this.props.key)
+
+        // this.setState({
+        //     paused:!paused,
+        // })
+
+
+        this.props.CurrentUrl(this.props.url)
 
     }
 
@@ -190,14 +308,14 @@ class VideoItem extends  Component{
         return(
             <View style={styles.backgroundVideo}>
             <TouchableOpacity onPress={()=>{
-                this.controlPlay();
+                // this.controlPlay();
             }}>
                 <Video
                     ref={(ref) => this.videoPlayer = ref}
                     source={{uri:this.props.url}}
                     style={styles.backgroundVideo}
-                    rate={1}                          // 控制暂停/播放，0 代表暂停paused, 1代表播放normal.
-                    paused={this.state.paused}
+                    rate={0}                          // 控制暂停/播放，0 代表暂停paused, 1代表播放normal.
+                    paused={0}
                     volume={1}                   // 声音的放大倍数，0 代表没有声音，就是静音muted, 1 代表正常音量 normal，更大的数字表示放大的倍数
                     muted={false}                  // true代表静音，默认为false.
                     resizeMode='cover'       // 视频的自适应伸缩铺放行为，
@@ -210,41 +328,62 @@ class VideoItem extends  Component{
                     onAudioFocusChanged={this.onAudioFocusChanged}
                     repeat={true}
 
-                />
+                >
+                </Video>
 
+                <TouchableOpacity  onPress={()=>{
+                    this.controlPlay();
+                }}>
+                    <Image
+                        source={{uri:'vedio.png'}}
+                        style={styles.palyBtn}
+                    />
+                </TouchableOpacity>
             </TouchableOpacity>
-
-
             </View>
 
         )
 
+        onAudioBecomingNoisy=()=>{
+
+        };
+        onAudioFocusChanged=()=>{
+
+        };
+        onLoad=()=>{
+            AlertIOS.alert('onLoad')
+
+
+        };
+        loadStart=()=>{
+            AlertIOS.alert('loadStart')
+
+        };
+        onProgress=()=>{
+            // AlertIOS.alert('onprogress')
+
+        };
+        setDuration=()=>{
+            // AlertIOS.alert('duration')
+
+        };
+        setTime=()=>{
+            // AlertIOS.alert('time')
+
+        };
+        onEnd=()=>{
+            // AlertIOS.alert('end')
+
+        };
+        videoError=(error)=>{
+            console.log('error');
+
+        };
+
     }
 }
 
-class VideoModal extends  Component{
-    constructor(props){
-        super(props);
-        this.state={
-            modalVisible:this.props.modalVisible,
-        }
-    }
-    render(){
 
-        return(
-            <Modal style={{ width:359, height:400}}
-                animationType={'fade'}
-                transparent={false}
-                visible={this.state.modalVisible}
-                onRequestClose={() => this.setState({
-                    modalVisible:false,
-                })}
-            >
-                <VideoItem url={this.props.url}/>
-            </Modal>
-        )
-    }
-}
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -263,6 +402,28 @@ const styles = StyleSheet.create({
     backgroundVideo: {
         width:350,
         height:200,
+
+    },
+    palyBtn:{
+        height: 50,
+        width: 50,
+        position:'absolute',
+        bottom:75,
+        alignSelf:'center',
+    },
+
+    fullScreenVideo:{
+        width:width,
+        height:250,
+        alignSelf:'center',
+
+    },
+    modalStyles:{
+        flex:1,
+        width:width,
+        height:250,
+        backgroundColor:'rgba(0,0,0,0.5)',
+        flexDirection:'row',
 
     },
 

@@ -141,7 +141,7 @@ export default class Mine extends Component {
         return(
             <View  style={{flexDirection:'row', width:width,height:240,backgroundColor:'red',marginBottom:20}}
             >
-                <ImageBackground
+                    <ImageBackground
                     source={{uri:'img_my_head'}}
                     style={{width:width,height:240}}
                 >
